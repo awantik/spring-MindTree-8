@@ -1,0 +1,3 @@
+Test Case class should be public.
+Test case function should be public, return Void & take no args.
+Each @Test function creates an instance of Test Class, so instace variable in one @Test function is not available to other

@@ -1,0 +1,35 @@
+There are three types of annotations.
+-Marker Annotation
+-Single-Value Annotation
+-Multi-Value Annotation
+
+Create Basic Custom Annotation
+
+Annotations are created by using @ sign, followed by the keyword interface, and followed by annotation name.
+Members can be decleared looks like methods. We should not provide implementation for these members.
+All annotations extends java.lang.annotation.Annotation interface. 
+Annotations cannot include any extends caluse.
+
+
+Retention policy in Java Annotations
+
+A retention policy determines at what point annotation should be discarded.
+Java defined 3 types of retention policies through java.lang.annotation.RetentionPolicy enumeration.
+It has SOURCE, CLASS and RUNTIME.
+Annotation with retention policy SOURCE will be retained only with source code, and discarded during compile time.
+Annotation with retention policy CLASS will be retained till compiling the code, and discarded during runtime.
+Annotation with retention policy RUNTIME will be available to the JVM through runtime.
+The retention policy will be specified by using java built-in annotation @Retention, and we have to pass the 
+retention policy type.
+The default retention policy type is CLASS.
+
+
+Get annotations at runtime using java reflection?
+
+Incase if any annotation is specifies its retention policy as RUNTIME, then those annotations 
+can be queried at runtime by any java program.
+
+
+Reflection ?
+Using Java Reflection, we can inspect classes, interfaces, fields at runtime without knowing name of class,
+interface etc. during compile time.

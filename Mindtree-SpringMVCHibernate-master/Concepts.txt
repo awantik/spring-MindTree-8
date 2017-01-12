@@ -1,0 +1,9 @@
+@Component - This makes java class a bean  so that comnponent scanning mechanism of spring can pick it up for creating bean
+@Repository - This is an extension of Component. In addition, it also imports DAO.
+@Service - Extension of component. Nothing additional but makes the purpose of class very clear
+@Controller - Marks a class Spring Web MVC Controller
+@RequestMapping - Map URL into methods
+
+@Transactional - persistence context, database transaction
+This explains scope of single tx. 
+  

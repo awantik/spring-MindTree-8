@@ -1,0 +1,173 @@
+---
+tags: [caching]
+projects: [spring-framework]
+---
+:spring_version: current
+:spring_boot_version: 1.4.2.RELEASE
+:SpringData: http://projects.spring.io/spring-data/
+:Cacheable: http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/cache/annotation/Cacheable.html
+:CachePut: http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/cache/annotation/CachePut.html
+:CacheEvict: http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/cache/annotation/CacheEvict.html
+:CachingConfigurer: http://docs.spring.io/spring/docs/{spring_version}/javadoc-api/org/springframework/cache/annotation/CachingConfigurer.html
+:EnableCaching: http://docs.spring.io/spring/docs/{spring_version}/javadoc-api/org/springframework/cache/annotation/EnableCaching.html
+:CacheManager: http://docs.spring.io/spring/docs/{spring_version}/javadoc-api/org/springframework/cache/CacheManager.html
+:documentation: http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html
+:bootcaching: https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-caching.html
+:runner: http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-command-line-runner
+:toc:
+:icons: font
+:source-highlighter: prettify
+:project_id: gs-caching
+
+This guide walks you through the process of enabling caching on a Spring managed bean.
+
+== What you'll build
+
+You'll build an application that enables caching on a simple book repository.
+
+
+== What you'll need
+
+:java_version: 1.8
+include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/prereq_editor_jdk_buildtools.adoc[]
+
+include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/how_to_complete_this_guide.adoc[]
+
+
+include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/hide-show-gradle.adoc[]
+
+include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/hide-show-maven.adoc[]
+
+include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/hide-show-sts.adoc[]
+
+
+
+[[initial]]
+== Create a book repository
+
+First, let's create a very simple model for your book
+
+`src/main/java/hello/Book.java`
+[source,java]
+----
+include::initial/src/main/java/hello/Book.java[]
+----
+
+And a repository for that model:
+
+`src/main/java/hello/BookRepository.java`
+[source,java]
+----
+include::initial/src/main/java/hello/BookRepository.java[]
+----
+
+You could have used {SpringData}[Spring Data] to provide an implementation of your
+repository over a wide range of SQL or NoSQL stores, but for the purpose of this
+guide, you will simply use a naive implementation that simulates some latency
+(network service, slow delay, etc).
+
+`src/main/java/hello/SimpleBookRepository.java`
+[source,java]
+----
+include::initial/src/main/java/hello/SimpleBookRepository.java[]
+----
+
+`simulateSlowService` is deliberately inserting a three second delay into each `getByIsbn` call. This is an example that later on, you'll speed up with caching.
+
+== Using the repository
+Next, wire up the repository and use it to access some books.
+
+`src/main/java/hello/Application.java`
+[source,java]
+----
+include::initial/src/main/java/hello/Application.java[]
+----
+
+include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/spring-boot-application.adoc[]
+
+There is also a {runner}[`CommandLineRunner`] that injects the `BookRepository` and calls it several times with different arguments.
+
+`src/main/java/hello/AppRunner.java`
+[source,java]
+----
+include::complete/src/main/java/hello/AppRunner.java[]
+----
+
+If you try to run the application at this point, you'll notice it's quite slow even though you are retrieving
+the exact same book several times.
+
+----
+2014-06-05 12:15:35.783  ... : .... Fetching books
+2014-06-05 12:15:40.783  ... : isbn-1234 -->Book{isbn='isbn-1234', title='Some book'}
+2014-06-05 12:15:43.784  ... : isbn-1234 -->Book{isbn='isbn-1234', title='Some book'}
+2014-06-05 12:15:46.786  ... : isbn-1234 -->Book{isbn='isbn-1234', title='Some book'}
+----
+
+As can be seen by the timestamps, each book took about three seconds to retrieve, even though it's the same title being repeatedly fetched.
+
+== Enable caching
+
+Let's enable caching on your `SimpleBookRepository` so that the books are cached within
+the `books` cache.
+
+`src/main/java/hello/SimpleBookRepository.java`
+[source,java]
+----
+include::complete/src/main/java/hello/SimpleBookRepository.java[]
+----
+
+You now need to enable the processing of the caching annotations
+
+`src/main/java/hello/Application.java`
+[source,java]
+----
+include::complete/src/main/java/hello/Application.java[]
+----
+
+The {EnableCaching}[`@EnableCaching`] annotation triggers a post processor that
+inspects every Spring bean for the presence of caching annotations on public
+methods. If such an annotation is found, a proxy is automatically created to intercept
+the method call and handle the caching behavior accordingly.
+
+The annotations that are managed by this post processor are {Cacheable}[`Cacheable`],
+{CachePut}[`CachePut`] and {CacheEvict}[`CacheEvict`]. You can refer to the javadocs and
+{documentation}[the documentation] for more details.
+
+Spring Boot automatically configures a suitable {CacheManager}[`CacheManager`] to serve as
+a provider for the relevant cache. See {bootcaching}[the Spring Boot documentation] for more details.
+
+Our sample does not use a specific caching library so our cache store is the simple fallback that uses `ConcurrentHashMap`. The caching abstraction supports a wide range of cache library and is fully compliant with JSR-107 (JCache).
+
+include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/build_an_executable_jar_subhead.adoc[]
+
+include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/build_an_executable_jar_with_both.adoc[]
+
+
+
+== Test the application
+
+Now that caching is enabled, you can execute it again and see the difference by adding additional
+calls with or without the same isbn. It should make a huge difference.
+
+----
+2016-09-01 11:12:47.033  .. : .... Fetching books
+2016-09-01 11:12:50.039  .. : isbn-1234 -->Book{isbn='isbn-1234', title='Some book'}
+2016-09-01 11:12:53.044  .. : isbn-4567 -->Book{isbn='isbn-4567', title='Some book'}
+2016-09-01 11:12:53.045  .. : isbn-1234 -->Book{isbn='isbn-1234', title='Some book'}
+2016-09-01 11:12:53.045  .. : isbn-4567 -->Book{isbn='isbn-4567', title='Some book'}
+2016-09-01 11:12:53.045  .. : isbn-1234 -->Book{isbn='isbn-1234', title='Some book'}
+2016-09-01 11:12:53.045  .. : isbn-1234 -->Book{isbn='isbn-1234', title='Some book'}
+----
+
+This excerpt from the console shows that the first time to fetch each title took three seconds, but each subsequent call was near instantaneous.
+
+
+== Summary
+
+Congratulations! You've just enabled caching on a Spring managed bean.
+
+
+
+
+include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/footer.adoc[]
+

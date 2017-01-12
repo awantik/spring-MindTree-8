@@ -1,0 +1,15 @@
+Tightly Coupled Software - Change in one class impacts the other class
+Loosely Coupled Software - Change in one class has no impact on other, this is very good software engineering
+Beans - Similar to objects with some differences
+Container -  Placeholder of bean
+
+It is Spring's responsibility of wiring beans or building relationshoip among objects.
+
+Creation of beans 
+- Create beans using XML
+- Create beans using Annotation
+
+ApplicationContent is an interface to the outside world for interacting with Spring Framework. Anything that you want Spring to do for you 
+ should be requested to ApplicationContext. BeanFactory & Context controls Spring behavior. 
+ 
+ Bean Factory is responsible of creating beans. By default beans are singleton

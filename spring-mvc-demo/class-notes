@@ -1,0 +1,7 @@
+Dispatcher Servlet Configuration
+  - Base Package for controllers
+  - Path Resolver
+  - static resources
+  - file uploads limits
+  
+@Controller - Classes annotated by this bahaves as controller class
